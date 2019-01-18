@@ -81,12 +81,16 @@ module.exports.executeOperation = async ( oId, votes) => {
       uWalletCont.addUserToWallet(result.dataValues.user_to_act, w.dataValues.publickey);
     }
     else {
+      console.log('operation', operation);
+      
       txRes = await wallet.makeTransaction(
         w.dataValues.publickey,
         cryptoSer.decryptIv(w.dataValues.privatekey),
         operation.dataValues.target,
         operation.dataValues.amount
-      );
+      ).value(value => {
+        console.log('txrex transaction', value);
+      });
       if (txRes) {
         const trans = await db.Transaction.create({
           type:'outbound',
@@ -117,6 +121,8 @@ module.exports.executeOperation = async ( oId, votes) => {
         }]
       });
       if(user.dataValues.valid_email){
+        console.log('txRes:', txRes);
+        console.log('result.dataValues.type:', result.dataValues.type);
         if (txRes || result.dataValues.type === 'adduser') sendMail.operationApproved(user.dataValues.email,operation.dataValues.message);
         else {
           await result.updateAttributes({
@@ -371,7 +377,7 @@ module.exports.createVotes = async (ctx, opId, wId, opMsg, amount, type, usernam
 };
 
 module.exports.createOperation = async (ctx) => {
-  console.log('create operation controller', ctx.request.body.amount)
+  console.log('create operation controller', ctx.request.body);
   //get userAuth Id
   let userId = await db.User.findOne({ where:
   { username:ctx.user.username},

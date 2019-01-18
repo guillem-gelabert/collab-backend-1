@@ -101,13 +101,14 @@ module.exports.makeTransaction = async (
     insight.broadcastPromise = promisify(insight, insight.broadcast);
     const utxos = await insight.getUnspentUtxosPromise(emisor);
     const tx = bitcore.Transaction();
+    console.log('tx in the make transaction function:', tx);  
     tx.from(utxos);
     tx.to(receptor, amount);
     tx.change(emisor);
     tx.fee(fee);
     tx.sign(privateKey);
     tx.serialize();
-
+    
     return insight.broadcastPromise(tx.serialize());
   } catch (e) {
     console.error(e);
