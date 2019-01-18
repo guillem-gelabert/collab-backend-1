@@ -27,6 +27,6 @@ router
   .get('/emailVal/:key', emailCont.checkValidEmail )
   .get('/emailVote/:key', emailCont.voteEmail )
   .post('/login', userCont.signIn)
-  .post('/register',userCont.createUser);
+  .post('/register', userCont.createUser);
 
 module.exports = router;

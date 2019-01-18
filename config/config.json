@@ -1,8 +1,8 @@
 {
   "development": {
-    "username": "ucollab",
-    "password": "P@$$w0rd",
-    "database": "collab_pres",
+    "username": "root",
+    "password": "password",
+    "database": "mydb",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
