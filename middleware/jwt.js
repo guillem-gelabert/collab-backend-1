@@ -20,20 +20,18 @@ const jWToken = async (ctx, next) => {
 
 
   if (ctx.jwt.modified) {
-    console.log('jwt secret', process.env.JWT_SECRET);
+    // console.log('jwt secret', process.env.JWT_SECRET);
     const token = jwt.sign(ctx.user, process.env.JWT_SECRET, {
       expiresIn: 86400
     });
-    console.log('the token', token);
-    console.log('the ctx body', ctx.body);
+    // console.log('the token', token);
+    // console.log('the ctx body', ctx.body);
     
     // ctx.set('x-token',token);
     if (!ctx.body) {
       ctx.body = {'jwt':token};
     } else {
       Object.assign(ctx.body, {'jwt':token});
-      console.log('object. assign', ctx.body);
-      
     }
   }
 };

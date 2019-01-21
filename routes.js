@@ -17,15 +17,15 @@ router
   .get('/operations/history/:wallet_id', authorize, operCont.getOperationHistoryWid)
   .get('/operations/pending', authorize, voteCont.getPendingOperations)
   .get('/operations/pending/:wallet_id', authorize, operCont.getPendingOperationsSpecificWallet)
-  .get('/operations/:operation_id',authorize, operCont.getOperation)
+  .get('/operations/:operation_id', authorize, operCont.getOperation)
 
   .post('/vote', authorize, voteCont.vote)
-  .post('/wallet/add_user',authorize, operCont.createOperation)
+  .post('/wallet/add_user', authorize, operCont.createOperation)
   .post('/operations', authorize, operCont.createOperation)
   .post('/wallet', authorize, walletCont.createWallet)
 
-  .get('/emailVal/:key', emailCont.checkValidEmail )
-  .get('/emailVote/:key', emailCont.voteEmail )
+  .get('/emailVal/:key', emailCont.checkValidEmail)
+  .get('/emailVote/:key', emailCont.voteEmail)
   .post('/login', userCont.signIn)
   .post('/register', userCont.createUser);
 

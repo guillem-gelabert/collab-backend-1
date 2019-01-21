@@ -6,7 +6,7 @@ const atob = require('atob');
 const db = require( __dirname + '/../models/' );
 const filterProps = require(__dirname + '/../services/utils').filterProps;
 const mailCont = require(__dirname + '/emailController');
-
+const { validateAddress } = require('../services/utils');
 
 module.exports.signIn = async (ctx) => {
   const auth = ctx.request.headers.authorization.split(' ');
@@ -26,10 +26,15 @@ module.exports.signIn = async (ctx) => {
 
 
 exports.createUser = async (ctx, next) => {
+  try {
+    validateAddress(ctx.request.body.public_key);
+  } catch (err) {
+    ctx.body = err;
+    ctx.status = 400;
+  }
   const salt = 10;
   if ('POST' != ctx.method) return await next();
   const userData = ctx.request.body;
-  console.log(userData);
   let user = await db.User.findOne({where :{username:userData.username}});
   if (user) {
     ctx.status = 400;

@@ -6,6 +6,7 @@ const request = require('../services/request');
 
 const promisify = require('../services/promisify');
 const bitcoinNet = process.env.BITCOIN_NET || 'testnet';
+const { validateAddress } = require('./utils');
 
 /**
  * Create a wallet with random address.
@@ -42,7 +43,9 @@ module.exports.createWallet = () => {
  */
 
 module.exports.getWalletBalance = async (emisor) => {
+
   try {
+    //validateAddress(emisor);
     insight.getUnspentUtxosPromise = promisify(insight, insight.getUnspentUtxos);
     const utxos = await insight.getUnspentUtxosPromise(emisor);
 
@@ -96,22 +99,24 @@ module.exports.getUTXOS = async (emisor) => {
 
 module.exports.makeTransaction = async (
   emisor, privateKey, receptor, amount, fee = process.env.BITCOIN_MINER_FEE || 1000) => {
+  console.log('makeTransaction args:', emisor, privateKey, receptor, amount, fee);
+
   try {
     insight.getUnspentUtxosPromise = promisify(insight, insight.getUnspentUtxos);
     insight.broadcastPromise = promisify(insight, insight.broadcast);
     const utxos = await insight.getUnspentUtxosPromise(emisor);
     const tx = bitcore.Transaction();
-    console.log('tx in the make transaction function:', tx);  
     tx.from(utxos);
-    tx.to(receptor, amount);
+    console.log('amount 2019', amount);
+    tx.to(receptor, Number(amount));
     tx.change(emisor);
-    tx.fee(fee);
+    tx.fee(Number(fee));
     tx.sign(privateKey);
     tx.serialize();
     
     return insight.broadcastPromise(tx.serialize());
   } catch (e) {
-    console.error(e);
+    console.error('Error in wallet.js', e);
   }
 };
 

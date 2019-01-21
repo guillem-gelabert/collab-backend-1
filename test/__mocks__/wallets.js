@@ -37,3 +37,12 @@ module.exports.emptyTestingWallet = {
   privateKey: '2c9547f6eecb205dc7b0f5a70aa5d435e9da98b005da8920e2dc243f5b6f7d02',
   privateKeyWIF: 'cP5N9X6EwdbGDS2Uwwng44RH4CX6zUuJWN1a6zL7uQnwme1vv5St'
 };
+
+module.exports.mockVotes = [
+  {
+    dataValues: { value: 1, userwallet_id: 1 },
+  },
+  {
+    dataValues: { value: 1, userwallet_id: 2 },
+  },
+];
