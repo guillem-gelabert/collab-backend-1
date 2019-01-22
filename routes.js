@@ -4,13 +4,10 @@ const authorize = require(__dirname + '/middleware/auth');
 
 const userCont = require(__dirname + '/controllers/userController');
 const walletCont = require(__dirname + '/controllers/walletController');
-const OperationController = require(__dirname + '/controllers/operationController');
-const operationController = new OperationController(13);
+const operationController = require(__dirname + '/controllers/operationController');
 
 const voteCont = require(__dirname + '/controllers/voteController');
 const emailCont = require(__dirname + '/controllers/emailController');
-
-
 
 router
   .get('/transactions/:walletid', authorize, walletCont.getTxFromWallet)

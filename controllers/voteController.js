@@ -1,6 +1,5 @@
 'use strict';
-const OperationController = require('./operationController');
-const operationController = new OperationController();
+const operationController = require('./operationController');
 
 const db = require( __dirname + '/../models/');
 
@@ -63,39 +62,32 @@ module.exports.evalVotes = (oId, votes) => {
   else operationController.rejectOperation(oId, votes);
 };
 
-module.exports.vote = async (ctx) => {
-  const { valueOfVote, operation_id, publicKey } = ctx.request.body;
-  // console.log('vote params in vote controller', Object.keys(ctx.request.body));
+module.exports.vote = async (ctx, next) => {
+  if (ctx.method !== 'GET') await next();
+  try {
+    const { valueOfVote, operation_id, publicKey } = ctx.request.body;
+    const { username } = ctx.user;
+    const { id: userId} = await db.User.findOne({ where: { username }});
+    const { id: userwallet_id} = await db.UserWallet.findOne({ where:
+      { user_id: userId, wallet_id: publicKey},
+    attributes: ['id']
+    });
+    const vote = await db.Vote.findOne({ where: { userwallet_id, operation_id }});
 
-  if (valueOfVote !== 1 && valueOfVote !== 2) return ctx.body = {error: 'Value of the vote invalid'};
-  //get userAuth Id
-  const userId = await db.User.findOne({ where:
-    { username:ctx.user.username},
-  attributes: ['id']
-  });
+    if (!userwallet_id || !vote) return ctx.body = { error: 'User has no rights for this wallet' };
+    if(vote.dataValues.value) return ctx.body = { error: 'User has already voted' };
+    const result = await vote.updateAttributes({
+      value: valueOfVote
+    });
 
-  //get userWallet id
-  const userWalletId = await db.UserWallet.findOne({ where:
-    { user_id: userId.id, wallet_id: publicKey},
-  attributes: ['id']
-  });
-  if (!userWalletId) return ctx.body = {error: 'User has no rights ver this wallet'};
+    if(!result) return ctx.body = {error: 'DB error on updating'};
 
-  const vote = await db.Vote.findOne({ where:
-    {userwallet_id:userWalletId.id, operation_id: operation_id}
-  });
-  if(!vote) return ctx.body = {error: 'User has not rights over this operation'};
-  if(vote.dataValues.value) return ctx.body = {error: 'User has already voted'};
+    ctx.jwt.modified = true;
+    ctx.body = {operation_id, publicKey};
 
-  const result = await vote.updateAttributes({
-    value: valueOfVote
-  });
-  if(!result) return ctx.body = {error: 'DB error on updating'};
+    this.evalVotes(operation_id);
 
-  ctx.jwt.modified = true;
-  ctx.body = {
-    'operation_id':operation_id,
-    'publicKey': publicKey};
-
-  this.evalVotes(operation_id);
+  } catch (error) {
+    console.error(error); // eslint-disable-line no-console
+  }
 };

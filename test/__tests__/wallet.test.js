@@ -4,8 +4,7 @@ require('iconv-lite').encodingExists('cesu8');
 const wallet = require('../../services/wallet');
 const mocks = require('../__mocks__/wallets');
 const request = require('../../services/request');
-const {OperationController} = require('../../controllers/operationController');
-const operationController = new OperationController();
+const operationController = require('../../controllers/operationController');
 const { evalVotes } = require('../../controllers/voteController');
 
 describe.only('evalVotes', () => {

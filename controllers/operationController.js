@@ -1,14 +1,16 @@
 
 const sendMail = require(__dirname + '/../services/mailer');
-const emailCont = require(__dirname + '/emailController');
-const wallet = require(__dirname + '/../services/wallet');
+const { sendVoteEmail } = require(__dirname + '/emailController');
+const { makeTransaction } = require(__dirname + '/../services/wallet');
 const uWalletCont = require(__dirname + '/userWalletController');
 const db = require(__dirname + '/../models/');
 
 const cryptoSer = require(__dirname + '/../services/cryptoSer');
 
 class OperationController {
-  constructor() {
+  constructor(sendVoteEmail, makeTransaction) {
+    this.sendVoteEmail = sendVoteEmail;
+    this.makeTransaction = makeTransaction;
   }
 
   async getPendingOperationsSpecificWallet(ctx) {
@@ -95,7 +97,7 @@ class OperationController {
         );
       } else {
         try {
-          txRes = await wallet.makeTransaction(
+          txRes = await this.makeTransaction(
             w.dataValues.publickey,
             cryptoSer.decryptIv(w.dataValues.privatekey),
             operation.dataValues.target,
@@ -404,7 +406,7 @@ class OperationController {
       });
       let user = await db.User.findOne({ where: { id: uw.dataValues.user_id } });
       if (user.dataValues.valid_email)
-        emailCont.sendVoteEmail(
+        this.sendVoteEmail(
           ctx,
           amount,
           user.dataValues,
@@ -468,6 +470,7 @@ class OperationController {
     }
 
     if (!operation) return (ctx.body = { error: 'DB error on inserting' });
+    
     //create all votes for this operation
     let error = await this.createVotes(
       ctx,
@@ -506,4 +509,4 @@ class OperationController {
   }
 }
 
-module.exports = OperationController;
+module.exports = new OperationController(sendVoteEmail, makeTransaction);

@@ -2,8 +2,7 @@ const wallet = require (__dirname + '/../services/wallet');
 
 const cryptoSer = require(__dirname + '/../services/cryptoSer');
 const userWallet = require(__dirname + '/userWalletController');
-const OperationController = require(__dirname + '/operationController');
-const operationController = new OperationController(13);
+const operationController = require(__dirname + '/operationController');
 const db = require (__dirname + '/../models/');
 
 const rabbit = require (__dirname + '/../services/rabbitmq');
