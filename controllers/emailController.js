@@ -1,60 +1,50 @@
 'use strict';
 const sendMail = require(__dirname + '/../services/mailer');
 
-const db = require( __dirname + '/../models/' );
+const db = require(__dirname + '/../models/');
 const cacheEmail = require(__dirname + '/../services/cacheEmail');
 const voteCont = require(__dirname + '/voteController');
 
 const uuidv4 = require('uuid/v4');
 
-module.exports.sendValidEmail = async ( ctx, userData ) => {
-  let uuid;
-  let exist;
-  do {
-    uuid = uuidv4();
-    exist = await cacheEmail.getCache(uuid);
-  } while(exist);
-  sendMail.emailValidator(userData, process.env.URL + '/emailVal/' + uuid );
-  cacheEmail.setCache( uuid, JSON.stringify({username:userData.username}));
+module.exports.sendValidationEmail = async (ctx, userData) => {
+  const uniqueUrl = uuidv4();
+  sendMail.emailValidator(userData, process.env.URL + '/emailVal/' + uniqueUrl);
+  cacheEmail.setCache(uniqueUrl, JSON.stringify({ username: userData.username }));
 };
 
-
-module.exports.sendVoteEmail = async ( ctx, amount, userData, msg, uwId, opId, type, username) => {
+module.exports.sendVoteEmail = async (ctx, amount, userData, msg, uwId, opId, type, username) => {
   const url = process.env.URL;
-  let ok;
-  let ko;
-  let exist;
-  do {
-    ok = uuidv4();
-    exist = await cacheEmail.getCache(ok);
-  } while(exist);
-  do {
-    ko = uuidv4();
-    exist = await cacheEmail.getCache(ko);
-  } while(exist);
-  await cacheEmail.setCache( ok, JSON.stringify({
-    username:userData.username,
+  const affirmativeVote = uuidv4();
+  const negativeVote = uuidv4();
+  const affirmativeVoteURL = url + '/emailVote/' + affirmativeVote;
+  const negativeVoteURL = url + '/emailVote/' + negativeVote;
+
+  await cacheEmail.setCache(affirmativeVote, JSON.stringify({
+    username: userData.username,
     operation_id: opId,
     userWallet_id: uwId,
     value: 1,
-    koCache: ko
+    negativeVoteCache: negativeVote
   }));
-  await cacheEmail.setCache( ko, JSON.stringify({
-    username:userData.username,
+
+  await cacheEmail.setCache(negativeVote, JSON.stringify({
+    username: userData.username,
     operation_id: opId,
     userWallet_id: uwId,
     value: 2,
-    okCache: ok
+    affirmativeVoteCache: affirmativeVote
   }));
-  sendMail.readyToVote(ctx.user.username, amount, userData, msg, url + '/emailVote/' + ok, url + '/emailVote/' + ko, type, username);
+
+  sendMail.readyToVote(ctx.user.username, amount, userData, msg, affirmativeVoteURL, negativeVoteURL, type, username);
 };
 
 
-module.exports.checkValidEmail = async ( ctx ) => {
-  const result = await cacheEmail.getCache( ctx.params.key );
+module.exports.checkValidEmail = async (ctx) => {
+  const result = await cacheEmail.getCache(ctx.params.key);
   if (result) {
     const user = await db.User.findOne({
-      where: {username: JSON.parse(result.data).username}
+      where: { username: JSON.parse(result.data).username }
     });
     if (user) {
       const updated = await user.update({
@@ -70,39 +60,27 @@ module.exports.checkValidEmail = async ( ctx ) => {
 };
 
 
-
-module.exports.voteEmail = async ( ctx ) => {
-  const key = ctx.params.key;
-
-  let result = await cacheEmail.getCache( key );
-  if (result) {
-    result = JSON.parse(result.data);
-
-    const vote = await db.Vote.findOne({
-      where: {
-        operation_id: result.operation_id,
-        userwallet_id: result.userWallet_id,
-      }
+// does it belong to vote controller?
+module.exports.voteEmail = async (ctx, next) => {
+  if (ctx.method !== 'GET') await next();
+  try {
+    const { key } = ctx.params;
+    const result = await cacheEmail.getCache(key);
+    const {
+      value,
+      operation_id,
+      userWallet_id: userwallet_id 
+    } = JSON.parse(result.data);
+    await db.Vote.update({ value }, {where: { userwallet_id, operation_id }}); // TODO: check if vote exists
+    const votes = await db.Vote.findAll({
+      where: { operation_id },
+      attributes: ['value', 'userwallet_id']
     });
-    // eslint-disable-next-line
-    if (!vote) return console.log({error: 'Vote no valid'});
-    const updated = await vote.update({
-      value: result.value
-    });
-    if (updated) {
-      cacheEmail.delFromCache(key);
-      if (result.value === 1) cacheEmail.delFromCache(result.koCache);
-      else cacheEmail.delFromCache(result.okCache);
-
-      const votes = await db.Vote.findAll({ where:
-        {operation_id: result.operation_id},
-      attributes: ['value','userwallet_id']
-      });
-
-      voteCont.evalVotes(result.operation_id, votes);
-
-      return ctx.redirect(process.env.FRONTEND_URL + '/thanksmessage');
-    }
+    cacheEmail.delFromCache(key);
+    voteCont.evalVotes(operation_id, votes);
+    ctx.redirect(process.env.FRONTEND_URL + '/thanksmessage');
+  } catch (error) {
+    console.error('error occured while voting:', error); // eslint-disable-line no-console
+    ctx.redirect(process.env.FRONTEND_URL + '/errorvoting');
   }
-  return ctx.redirect(process.env.FRONTEND_URL + '/errorvoting');
-};
+};   

@@ -1,27 +1,27 @@
 'use strict';
-
 require('iconv-lite').encodingExists('cesu8');
 
 const wallet = require('../../services/wallet');
 const mocks = require('../__mocks__/wallets');
 const request = require('../../services/request');
-const operationController = require('../../controllers/operationController');
+const {OperationController} = require('../../controllers/operationController');
+const operationController = new OperationController();
 const { evalVotes } = require('../../controllers/voteController');
 
 describe.only('evalVotes', () => {
-  it('calls executeOperation if all votes are affirmative', () => {
+  it('calls executeOperation if all votes are affirmative', async () => {
     const spy = jest.spyOn(operationController, 'executeOperation');
     evalVotes(mocks.oId, mocks.mockVotes.allAffirmative);
     expect(spy).toHaveBeenCalled(); 
   });
 
-  it('calls executeOperation if all votes are negative', () => {
+  it('calls executeOperation if all votes are negative', async () => {
     const spy = jest.spyOn(operationController, 'rejectOperation');
     evalVotes(mocks.oId, mocks.mockVotes.allNegative);
     expect(spy).toHaveBeenCalled(); 
   });
 
-  it('calls executeOperation if not all votes are affirmative', () => {
+  it('calls executeOperation if not all votes are affirmative', async () => {
     const spy = jest.spyOn(operationController, 'rejectOperation');
     evalVotes(mocks.oId, mocks.mockVotes.mixed);
     expect(spy).toHaveBeenCalled(); 

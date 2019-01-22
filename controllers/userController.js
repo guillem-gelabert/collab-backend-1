@@ -55,7 +55,7 @@ exports.createUser = async (ctx, next) => {
       publickey: user.public_key,
       email: user.email
     });
-    mailCont.sendValidEmail(ctx, userData);
+    mailCont.sendValidationEmail(ctx, userData);
     ctx.body = { username: userData.username, email:userData.email };
     console.log('hello');
     

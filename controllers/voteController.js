@@ -1,8 +1,8 @@
 'use strict';
-const opCont = require (__dirname + '/operationController');
-const db = require( __dirname + '/../models/' );
+const OperationController = require('./operationController');
+const operationController = new OperationController();
 
-
+const db = require( __dirname + '/../models/');
 
 module.exports.getPendingOperations = async (ctx) => {
   const operations = await db.Operation.findAll({
@@ -59,8 +59,8 @@ module.exports.getPendingOperations = async (ctx) => {
 module.exports.evalVotes = (oId, votes) => {
   const voteCount = votes.length;
   const affirmativeVoteCount = votes.filter(vote => vote.dataValues.value === 1).length;
-  if (affirmativeVoteCount >= voteCount) opCont.executeOperation( oId, votes );
-  else opCont.rejectOperation(oId, votes);
+  if (affirmativeVoteCount >= voteCount) operationController.executeOperation(oId, votes);
+  else operationController.rejectOperation(oId, votes);
 };
 
 module.exports.vote = async (ctx) => {

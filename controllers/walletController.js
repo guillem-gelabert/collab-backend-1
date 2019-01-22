@@ -1,13 +1,12 @@
 const wallet = require (__dirname + '/../services/wallet');
 
-const cryptoSer = require( __dirname + '/../services/cryptoSer');
-const userWallet = require ( __dirname + '/userWalletController');
-const operCont = require ( __dirname + '/operationController');
+const cryptoSer = require(__dirname + '/../services/cryptoSer');
+const userWallet = require(__dirname + '/userWalletController');
+const OperationController = require(__dirname + '/operationController');
+const operationController = new OperationController(13);
 const db = require (__dirname + '/../models/');
 
 const rabbit = require (__dirname + '/../services/rabbitmq');
-
-
 
 exports.getTxFromWallet = async ( ctx ) => {
   const userId = await db.User.findOne({
@@ -137,7 +136,7 @@ exports.getWallets = async (ctx) => {
     auxWallet.balance = await wallet.getWalletBalance( auxWallet.publickey );
     auxWallet.users = await userWallet.usersOfWallet( auxWallet.publickey );
     auxWallet.transactions = await this.getTxFromWalletInt( auxWallet.publickey );
-    auxWallet.operations = await operCont.getAllOperationsWallet( auxWallet.publickey );
+    auxWallet.operations = await operationController.getAllOperationsWallet( auxWallet.publickey );
   }
   ctx.jwt.modified = true;
   ctx.body = {wallets:result};
