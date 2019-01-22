@@ -93,7 +93,13 @@ module.exports.voteEmail = async ( ctx ) => {
       cacheEmail.delFromCache(key);
       if (result.value === 1) cacheEmail.delFromCache(result.koCache);
       else cacheEmail.delFromCache(result.okCache);
-      voteCont.evalVotes(result.operation_id);
+
+      const votes = await db.Vote.findAll({ where:
+        {operation_id: result.operation_id},
+      attributes: ['value','userwallet_id']
+      });
+
+      voteCont.evalVotes(result.operation_id, votes);
 
       return ctx.redirect(process.env.FRONTEND_URL + '/thanksmessage');
     }

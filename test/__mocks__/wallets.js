@@ -38,11 +38,19 @@ module.exports.emptyTestingWallet = {
   privateKeyWIF: 'cP5N9X6EwdbGDS2Uwwng44RH4CX6zUuJWN1a6zL7uQnwme1vv5St'
 };
 
-module.exports.mockVotes = [
-  {
-    dataValues: { value: 1, userwallet_id: 1 },
-  },
-  {
-    dataValues: { value: 1, userwallet_id: 2 },
-  },
-];
+module.exports.mockVotes = {
+  allAffirmative: [
+    { dataValues: { value: 1, userwallet_id: 1 }},
+    { dataValues: { value: 1, userwallet_id: 2 }},
+  ],
+  allNegative: [
+    { dataValues: { value: 2, userwallet_id: 1 }},
+    { dataValues: { value: 2, userwallet_id: 2 }},
+  ],
+  mixed: [
+    { dataValues: { value: 2, userwallet_id: 1 }},
+    { dataValues: { value: 1, userwallet_id: 2 }},
+  ]
+};
+
+module.exports.oId = 5;

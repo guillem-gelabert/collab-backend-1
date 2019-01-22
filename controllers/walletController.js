@@ -7,6 +7,8 @@ const db = require (__dirname + '/../models/');
 
 const rabbit = require (__dirname + '/../services/rabbitmq');
 
+
+
 exports.getTxFromWallet = async ( ctx ) => {
   const userId = await db.User.findOne({
     where: {username: ctx.user.username}
@@ -36,10 +38,10 @@ exports.getTxFromWallet = async ( ctx ) => {
     });
   }
   //remove inbound same idtrans(str)
-  for (let i = 0; i<result.length; i++){
+  for (let i = 0; i < result.length; i++){
     if (result[i].type === 'outbound'){
-      if (result[i-1].transaction_str === result[i].transaction_str) {
-        result.splice(i-1, 1);
+      if (result.length < 0 && result[i-1].transaction_str === result[i].transaction_str) {
+        result.splice(i - 1, 1);
       }
     }
   }
@@ -78,7 +80,6 @@ exports.getTxFromWalletInt = async ( key ) => {
   }
   return result;
 };
-
 
 exports.registerTxInbound = async (ctx, walletid ) => {
   //take the last inbound tx in the db

@@ -56,33 +56,16 @@ module.exports.getPendingOperations = async (ctx) => {
 
 
 // evaluates votes
-module.exports.evalVotes = async ( oId ) => {
-  const votes = await db.Vote.findAll({ where:
-    {operation_id: oId},
-  attributes: ['value','userwallet_id']
-  });  
-  console.log('votes in evalVotes', votes);
-  let allVotes = votes.length;
-  let howManyVotes = 0;
-  let howManyOK = 0;
-  for (let vote of votes) {
-    if (vote.dataValues.value) {
-      howManyVotes++;
-      if ( vote.dataValues.value === 1) howManyOK++;
-    }
-  }
-  if ( howManyVotes === allVotes) {
-    if ( allVotes === howManyOK ) await opCont.executeOperation( oId, votes );
-    else await opCont.rejectOperation( oId, votes );
-  }
+module.exports.evalVotes = (oId, votes) => {
+  const voteCount = votes.length;
+  const affirmativeVoteCount = votes.filter(vote => vote.dataValues.value === 1).length;
+  if (affirmativeVoteCount >= voteCount) opCont.executeOperation( oId, votes );
+  else opCont.rejectOperation(oId, votes);
 };
-
-
 
 module.exports.vote = async (ctx) => {
   const { valueOfVote, operation_id, publicKey } = ctx.request.body;
   // console.log('vote params in vote controller', Object.keys(ctx.request.body));
-  
 
   if (valueOfVote !== 1 && valueOfVote !== 2) return ctx.body = {error: 'Value of the vote invalid'};
   //get userAuth Id
