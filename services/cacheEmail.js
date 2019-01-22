@@ -21,6 +21,7 @@ module.exports.setCacheTime = async (hash, value, time) => {
   client.set(hash, value);
   client.expire(hash, time);
 };
+
 module.exports.getCacheTime = async (hash) => {
   return new Promise (function (resolve) {
     client.get(hash, function (err,replies) {
@@ -31,9 +32,11 @@ module.exports.getCacheTime = async (hash) => {
     });
   });
 };
+
 module.exports.delFromCache = async (hash) => {
   client.del(hash);
 };
+
 module.exports.destroyAll = async () => {
   client.FLUSHALL();
 };

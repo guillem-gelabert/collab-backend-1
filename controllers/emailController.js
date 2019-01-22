@@ -83,4 +83,4 @@ module.exports.voteEmail = async (ctx, next) => {
     console.error('error occured while voting:', error); // eslint-disable-line no-console
     ctx.redirect(process.env.FRONTEND_URL + '/errorvoting');
   }
-};   
+};
