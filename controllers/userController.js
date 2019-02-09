@@ -57,7 +57,7 @@ exports.createUser = async (ctx, next) => {
     });
     mailCont.sendValidEmail(ctx, userData);
     ctx.body = { username: userData.username, email:userData.email };
-    console.log('hello');
+    console.log('hello'); // eslint-disable-line no-console
     
     ctx.user = { username: userData.username};
     ctx.jwt.modified = true;

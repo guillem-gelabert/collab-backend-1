@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon app.js",
     "start": "node app.js",
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "migrate": "node_modules/.bin/sequelize db:migrate"
   },
   "repository": {
